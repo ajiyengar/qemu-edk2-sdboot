@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-#setsid ${TERMINAL} -e aarch64-linux-gnu-gdb -ex "target remote localhost:1234" &
+setsid ${TERMINAL} -e aarch64-linux-gnu-gdb -ex "target remote localhost:1234" &
 qemu-system-aarch64 \
   -machine type=virt,virtualization=on,pflash0=rom,pflash1=efivars \
   -cpu max \
@@ -10,6 +10,6 @@ qemu-system-aarch64 \
   -drive file=fat:rw:VirtualDrive,format=raw,media=disk \
   -serial mon:stdio \
   -net none \
-  -display none
-#  -s \
-#  -S
+  -display none \
+  -s \
+  -S
