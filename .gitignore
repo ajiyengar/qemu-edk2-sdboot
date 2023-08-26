@@ -1,1 +1,5 @@
 /build*/
+*.raw
+*gdb*
+VirtualDrive
+*logs.txt

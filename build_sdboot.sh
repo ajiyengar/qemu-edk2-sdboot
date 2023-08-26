@@ -6,3 +6,6 @@ set -e
 
 meson setup --default-library static --prefer-static --cross-file meson_aarch64.txt systemd/build_aarch64/ systemd/
 ninja -C systemd/build_aarch64/ systemd-boot
+
+mkdir -p VirtualDrive
+cp systemd/build_aarch64/src/boot/efi/systemd-bootaa64.efi VirtualDrive/
