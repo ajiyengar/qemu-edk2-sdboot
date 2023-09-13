@@ -1,5 +1,7 @@
 /build*/
 *.raw
+*.img
+*.bak
 *gdb*
 VirtualDrive
 *logs.txt
