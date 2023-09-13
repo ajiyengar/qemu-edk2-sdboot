@@ -18,7 +18,7 @@ parted disk.img -s -a minimal toggle 1 boot
 #Create empty FAT volume for EFI system partition
 dd if=/dev/zero of=/tmp/esp.img bs=512 count=91669
 mformat -i /tmp/esp.img -h 32 -t 32 -n 64 -c 1
-mlabel -i /tmp/esp.img ::"QEMU NVME ESP"
+mlabel -i /tmp/esp.img ::"NVME ESP"
 
 #Inject systemd-boot.efi as BOOTAA64.efi into ESP FAT volume
 mmd -i /tmp/esp.img ::/EFI
