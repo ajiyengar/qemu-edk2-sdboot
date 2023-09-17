@@ -17,7 +17,7 @@ export BUILD_FLAGS="-D NETWORK_TLS_ENABLE=1 -D NETWORK_IP6_ENABLE=1 -D NETWORK_H
 export DEBUG=NOOPT
 
 source edk2/edksetup.sh
-build -a ${ARCH} -t ${COMPILER} -b ${DEBUG} -p edk2/ArmVirtPkg/ArmVirtQemu.dsc --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor=L"Ajay Custom Qemu" --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString=L"Ajay Custom Qemu" ${BUILD_FLAGS}
+build -a ${ARCH} -t ${COMPILER} -b ${DEBUG} -p edk2/ArmVirtPkg/ArmVirtQemu.dsc --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVendor=L"Ajay Qemu" --pcd gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString=L"Ajay Qemu v1" ${BUILD_FLAGS}
 
 dd of="QEMU_EFI.raw" if="/dev/zero" bs=1M count=64
 dd of="QEMU_EFI.raw" if="Build/ArmVirtQemu-AARCH64/${DEBUG}_GCC5/FV/QEMU_EFI.fd" conv=notrunc
