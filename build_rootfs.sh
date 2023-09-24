@@ -40,8 +40,8 @@ ifconfig lo 127.0.0.1
 
 echo 3 > /proc/sys/kernel/printk     #cat /dev/kmsg
 
-#CONSOLE=/dev/tty1                    #LCD   (also /dev/console)
-CONSOLE=/dev/ttyAMA0                 #Serial
+CONSOLE=/dev/tty1                    #LCD   (also /dev/console)
+#CONSOLE=/dev/ttyAMA0                 #Serial
 echo -e '\e[?7hType exit when done.' #Vertical autowrap
 exec oneit -c $CONSOLE /bin/sh
 EOF
@@ -57,23 +57,15 @@ EOF
 echo -e 'root:x:0:\nguest:x:500:\nnobody:x:65534:' > /tmp/rootfs/etc/group
 
 
-###############
-# Build Linux
-###############
+####################
+# Copy Linux Modules
+####################
 make -C linux -j$(nproc) ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE INSTALL_MOD_PATH=/tmp/rootfs modules_install
 
-#mkdir -p sdcard/$VER/efi/boot
-#cp linux/arch/arm64/boot/dts/broadcom/bcm2711-rpi-*4*.dtb sdcard/$VER
-
-# >>>>>> TODO >>>>>>>
-# Copy Image into NVME ESP with mtools
-#cp linux/arch/arm64/boot/Image sdcard/$VER/efi/boot/bootaa64.efi
-
-
-###############
-# Build Toybox
-###############
-make -C toybox ARCH=aarch64 CROSS_COMPILE=${CROSS_COMPILE} PREFIX=/tmp/rootfs defconfig toybox
+#################
+# Copy Toybox and
+# Dependencies
+#################
 make -C toybox ARCH=aarch64 CROSS_COMPILE=${CROSS_COMPILE} PREFIX=/tmp/rootfs/bin install_flat
 
 echo "toybox Dependencies:"
@@ -85,7 +77,7 @@ ln -s ld-2.33.so /tmp/rootfs/lib/ld-linux-aarch64.so.1
 ln -s ../lib/ld-2.33.so /tmp/rootfs/usr/bin/ld.so
 
 ###############
-# Build Shell
+# Copy Shell
 ###############
 cp mksh/mksh /tmp/rootfs/bin
 ln -s mksh /tmp/rootfs/bin/sh
@@ -101,14 +93,3 @@ ${CROSS_COMPILE}readelf -a mksh/mksh | grep -E "(program interpreter)|(Shared li
 sudo chown -R root:root /tmp/rootfs
 sudo mknod -m 666 /tmp/rootfs/dev/null c 1 3
 sudo mknod -m 600 /tmp/rootfs/dev/console c 5 1
-
-#################
-# Patch NVME disk
-#################
-ROOTFS_SZ=$(parted /tmp/qemu_disk.img -j -s unit s print | jq '.disk.partitions.[] | select(.name|test("root")) | .size' | sed -E 's/[^0-9]*//g')
-
-#udisksctl loop-setup --file /tmp/qemu_disk.img --offset $((($ESP_SZ)/512+2048)) --size $ROOTFS_SZ
-#udisksctl mount -b /dev/loop0
-dd if=/dev/zero of=/tmp/rootfs.img bs=512 count=$ROOTFS_SZ
-mkfs.ext4 -d /tmp/rootfs /tmp/rootfs.img
-
