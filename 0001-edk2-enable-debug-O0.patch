@@ -1,0 +1,32 @@
+diff --git a/ArmVirtPkg/ArmVirt.dsc.inc b/ArmVirtPkg/ArmVirt.dsc.inc
+index 2443e8351c99..c8118885514c 100644
+--- a/ArmVirtPkg/ArmVirt.dsc.inc
++++ b/ArmVirtPkg/ArmVirt.dsc.inc
+@@ -33,6 +33,10 @@ [BuildOptions.common.EDKII.DXE_RUNTIME_DRIVER]
+   GCC:*_*_ARM_DLINK_FLAGS = -z common-page-size=0x1000
+   GCC:*_*_AARCH64_DLINK_FLAGS = -z common-page-size=0x10000
+ 
++[BuildOptions.common]
++  GCC:*_*_*_CC_FLAGS = -fno-omit-frame-pointer
++  GCC:*_*_*_ASM_FLAGS = -g
++
+ [LibraryClasses.common]
+ !if $(TARGET) == RELEASE
+   DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
+@@ -374,6 +378,7 @@ [Components.common]
+   # Ramdisk support
+   #
+   MdeModulePkg/Universal/Disk/RamDiskDxe/RamDiskDxe.inf
++  MdeModulePkg/Universal/FvSimpleFileSystemDxe/FvSimpleFileSystemDxe.inf
+ 
+   ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf {
+     <PcdsFixedAtBuild>
+diff --git a/ArmVirtPkg/ArmVirtQemuFvMain.fdf.inc b/ArmVirtPkg/ArmVirtQemuFvMain.fdf.inc
+index 2894bc853a46..fc036a8702b7 100644
+--- a/ArmVirtPkg/ArmVirtQemuFvMain.fdf.inc
++++ b/ArmVirtPkg/ArmVirtQemuFvMain.fdf.inc
+@@ -195,3 +195,4 @@ [FV.FvMain]
+   # Ramdisk support
+   #
+   INF MdeModulePkg/Universal/Disk/RamDiskDxe/RamDiskDxe.inf
++  INF MdeModulePkg/Universal/FvSimpleFileSystemDxe/FvSimpleFileSystemDxe.inf

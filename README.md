@@ -9,7 +9,9 @@ The goal of the project is to boot (and debug) QEMU with the following boot stac
 ## Sync and setup
 1. After cloning the repo, fetch the submodules:
 
-   `git submodule update --init --recursive`
+    ```sh
+    git submodule update --init --recursive
+    ```
 
 1. Install dependencies
 * `docker` used for building EDK2
@@ -32,15 +34,27 @@ Above artifacts will be packaged into QEMU disks:
 Edit `run.sh` and uncomment '-s -S' when starting QEMU to enable GDB breaking. Also uncomment remote GDB launching.
 Run `run.sh` to start QEMU
 
+## Debug
+1. Since ASLR is disabled, save run logs: `./run.sh > runlogs.txt`
+1. Parse run logs for symbol load address: `\grep add-symbol-file runlogs.txt > load-syms.gdb`
+1. Run with GDB attach mode: `./run.sh debug`
+1. In the GDB window, load the symbols: `source load-syms.gdb`
+
+
 ---
 
 #### Repo Setup Details
-```
-git submodule add https://github.com/systemd/systemd.git systemd
-git add systemd
-git submodule add https://github.com/tianocore/edk2.git edk2
-git add edk2
-git submodule add --depth 1 https://github.com/torvalds/linux.git linux
-git add linux
-```
+
+1. Submodules setup as follows:
+
+    ```sh
+    git submodule add https://github.com/systemd/systemd.git systemd
+    git submodule add https://github.com/tianocore/edk2.git edk2
+    git submodule add --depth 1 https://github.com/torvalds/linux.git linux
+    git submodule add https://github.com/landley/toybox.git toybox
+    git submodule add https://github.com/MirBSD/mksh.git mksh
+    git add systemd edk2 linux toybox mksh
+    ```
+
+1. Next statement
 

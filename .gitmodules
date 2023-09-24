@@ -7,3 +7,9 @@
 [submodule "linux"]
 	path = linux
 	url = https://github.com/torvalds/linux.git
+[submodule "mksh"]
+	path = mksh
+	url = https://github.com/MirBSD/mksh.git
+[submodule "toybox"]
+	path = toybox
+	url = https://github.com/landley/toybox.git
