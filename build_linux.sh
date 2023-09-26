@@ -8,6 +8,7 @@ export CROSS_COMPILE=$PWD/tools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-g
 # Build Linux
 ###############
 make -C linux ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE LOCALVERSION="-ajay" virtconfig
+sed -i 's/# CONFIG_DEBUG_EFI is not set/CONFIG_DEBUG_EFI=y/g' linux/.config
 make -C linux -j$(nproc) ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE LOCALVERSION="-ajay" Image modules dtbs
 
 ###############
