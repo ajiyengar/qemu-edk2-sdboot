@@ -29,7 +29,7 @@ Above artifacts will be packaged into QEMU disks:
 
 * QEMU pflash: `QEMU_{EFI,VARS}.raw` generated from `.fd` files
 * QEMU NVMe drive: `qemu_disk.img`; GPT-formatted disk containing the following partitions:
-  * _EFI System Partition_: Contains Systemd-Boot and related configuration files, and Linux+KVM image.
+  * _EFI System Partition_: Contains Systemd-Boot and related configuration files, and Linux+KVM image
   * _Root_: Linux Root filesystem
 
 ## Run
@@ -49,9 +49,9 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
 
 ---
 
-#### Repo Setup Details
+#### Miscellaneous Details
 
-1. Submodules setup as follows:
+1. Submodules setup as below. No need to run these commands unless setting up a new repo.
 
     ```sh
     git submodule add https://github.com/systemd/systemd.git systemd
@@ -62,5 +62,16 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
     git add systemd edk2 linux toybox mksh
     ```
 
-1. Next statement
+1. `dd` seek and skip can be easy to confuse:
 
+   _#Skip 20 sectors in **infile**, then copy 10 sectors from infile to outfile:_
+
+     ```sh
+     dd if=infile of=outfile bs=512 count=10 skip=20
+     ```
+
+   _#Skip 20 sectors in **outfile**, then copy 10 sectors from infile to outfile:_
+
+     ```sh
+     dd if=infile of=outfile bs=512 count=10 seek=20
+     ```
