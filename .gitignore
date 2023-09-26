@@ -2,7 +2,8 @@
 *.raw
 *.img
 *.bak
-*gdb*
+.gdb_history
+gdb.txt
 VirtualDrive
 *logs.txt
 cscope*

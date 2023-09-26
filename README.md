@@ -75,3 +75,10 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
      ```sh
      dd if=infile of=outfile bs=512 count=10 seek=20
      ```
+
+1. Interesting breakpoints:
+
+   * `efi_main`: Systemd-Boot entry point
+   * `__efistub_efi_pe_entry`: EFISTUB entry point
+
+
