@@ -34,6 +34,20 @@ mcopy -i /tmp/esp.img \
 
 #Inject kernel into ESP FAT volume
 mcopy -i /tmp/esp.img linux/arch/arm64/boot/Image ::/
+mmd -i /tmp/esp.img ::/loader
+mmd -i /tmp/esp.img ::/loader/entries
+
+cat > /tmp/loader.conf << 'EOF' &&
+timeout 3
+EOF
+mcopy -i /tmp/esp.img /tmp/loader.conf ::/loader/loader.conf
+
+cat > /tmp/linux.conf << 'EOF' &&
+title   Linux
+linux   /Image
+options root="PARTLABEL=root" rw
+EOF
+mcopy -i /tmp/esp.img /tmp/linux.conf ::/loader/entries/linux.conf
 
 #Inject ESP into disk
 dd if=/tmp/esp.img of=/tmp/qemu_disk.img bs=512 count=$(($ESP_SZ/512)) seek=$ALIGN conv=notrunc
@@ -45,7 +59,7 @@ mkfs.ext4 -d /tmp/rootfs /tmp/rootfs.img
 dd if=/tmp/rootfs.img of=/tmp/qemu_disk.img bs=512 count=$ROOTFS_SZ_S seek=$ESP_END_S conv=notrunc
 
 #Copy into project directory
-#cp /tmp/qemu_disk.img .
+cp /tmp/qemu_disk.img .
 
 #Virtual drive for simple host/qemu file sharing
 mkdir -p VirtualDrive
