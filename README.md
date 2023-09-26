@@ -51,7 +51,7 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
 
 #### Miscellaneous Details
 
-1. Submodules setup as below. No need to run these commands unless setting up a new repo.
+1. Submodules setup as below. No need to run these commands unless setting up a new repo yourself.
 
     ```sh
     git submodule add https://github.com/systemd/systemd.git systemd
@@ -66,26 +66,57 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
 
    _#Skip 20 sectors in **infile**, then copy 10 sectors from infile to outfile:_
 
-     ```sh
-     dd if=infile of=outfile bs=512 count=10 skip=20
-     ```
+    ```sh
+       dd if=infile of=outfile bs=512 count=10 skip=20
+    ```
 
    _#Skip 20 sectors in **outfile**, then copy 10 sectors from infile to outfile:_
 
-     ```sh
-     dd if=infile of=outfile bs=512 count=10 seek=20
-     ```
+    ```sh
+       dd if=infile of=outfile bs=512 count=10 seek=20
+    ```
 
 1. Interesting breakpoints:
 
-  * `b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint` -- EDK2 PEI stage entry point
-  * `b DxeHandoff.c:HandOffToDxeCore` -- Handoff between PEI and DXE stages
-  * `b DxeCoreEntryPoint.c:_ModuleEntryPoint` -- EDK2 DXE stage entry point
-    * End of `DxeMain` has the jump from DXE to BDS stage
-  * `b BdsEntry.c:BdsEntry` -- EDK2 BDS stage entry point
-  * `b boot.c:efi_main` -- Systemd-Boot entry point
-    * Inside `UefiBootManagerLib/BmBoot.c:EfiBootManagerBoot` is the jump from BDS to Systemd-Boot
-  * `b efi-stub-entry.c:efi_pe_entry` -- EFISTUB entry point
-    * Inside `boot.c:image_start` is the jump from Systemd-Boot to EFISTUB
+   * `b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint` -- EDK2 PEI stage entry point
+   * `b DxeHandoff.c:HandOffToDxeCore` -- Handoff between PEI and DXE stages
+   * `b DxeCoreEntryPoint.c:_ModuleEntryPoint` -- EDK2 DXE stage entry point
+     * End of `DxeMain` has the jump from DXE to BDS stage
+   * `b BdsEntry.c:BdsEntry` -- EDK2 BDS stage entry point
+   * `b boot.c:efi_main` -- Systemd-Boot entry point
+     * Inside `UefiBootManagerLib/BmBoot.c:EfiBootManagerBoot` is the jump from BDS to Systemd-Boot
+   * `b efi-stub-entry.c:efi_pe_entry` -- EFISTUB entry point
+     * Inside `boot.c:image_start` is the jump from Systemd-Boot to EFISTUB
 
+1. Text/Data symbol locations can be determined using `efi_debugging.py` tool available in EDK2:
 
+       Loading driver at 0x0013BD6A000 EntryPoint=0x0013BD7605C
+       systemd-boot@0x13bd6a000 254-546-g672de61
+       Output of "efi_debugging.py systemd-bootaa64.efi":
+       EntryPoint = 0x0000c05c  TextAddress = 0x00001000 DataAddress = 0x00025000
+       .text    0x00001000 (0x1E15C) flags:0x60000020
+       .rodata  0x00020000 (0x04FD5) flags:0x40000040
+       .data    0x00025000 (0x003D0) flags:0xC0000040
+       .sdmagic 0x00026000 (0x00034) flags:0x40000040
+       .osrel   0x00027000 (0x00051) flags:0x40000040
+       .reloc   0x00028000 (0x00094) flags:0x42000040
+       Data Directories:
+       Relocation Table 0x00028000 0x94
+
+    Using above output, setup GDB as follows:
+
+   `add-symbol-file systemd/build_aarch64/src/boot/efi/systemd-bootaa64.elf 0x13BD6B000 -s .data 0x13BD8F000`
+
+    Another example for EFISTUB:
+
+       Loading driver at 0x00139210000 EntryPoint=0x0013A3CFC80
+       Output of "efi_debugging.py linux/arch/arm64/boot/Image":
+       EntryPoint = 0x011bfc80  TextAddress = 0x00010000 DataAddress = 0x01210000
+       .text    0x00010000 (0x1200000) flags:0x60000020
+       .data    0x01210000 (0x3E0000) flags:0xC0000040
+       Data Directories:
+       Debug 0x0122040C 0x1C
+
+    Using above output, setup GDB as follows:
+
+   `add-symbol-file linux/vmlinux 0x139220000 -s .data 0x13A420000`
