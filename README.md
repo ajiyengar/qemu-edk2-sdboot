@@ -78,7 +78,14 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
 
 1. Interesting breakpoints:
 
-   * `efi_main`: Systemd-Boot entry point
-   * `__efistub_efi_pe_entry`: EFISTUB entry point
+  * `b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint` -- EDK2 PEI stage entry point
+  * `b DxeHandoff.c:HandOffToDxeCore` -- Handoff between PEI and DXE stages
+  * `b DxeCoreEntryPoint.c:_ModuleEntryPoint` -- EDK2 DXE stage entry point
+    * End of `DxeMain` has the jump from DXE to BDS stage
+  * `b BdsEntry.c:BdsEntry` -- EDK2 BDS stage entry point
+  * `b boot.c:efi_main` -- Systemd-Boot entry point
+    * Inside `UefiBootManagerLib/BmBoot.c:EfiBootManagerBoot` is the jump from BDS to Systemd-Boot
+  * `b efi-stub-entry.c:efi_pe_entry` -- EFISTUB entry point
+    * Inside `boot.c:image_start` is the jump from Systemd-Boot to EFISTUB
 
 

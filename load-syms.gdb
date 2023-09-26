@@ -128,3 +128,12 @@ add-symbol-file systemd/build_aarch64/src/boot/efi/systemd-bootaa64.elf 0x13BD6B
 add-symbol-file linux/vmlinux 0x139220000 -s .data 0x13A420000
 
 set substitute-path /work .
+
+dashboard -layout assembly source stack variables
+
+b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint
+b DxeHandoff.c:HandOffToDxeCore
+b DxeCoreEntryPoint.c:_ModuleEntryPoint
+b BdsEntry.c:BdsEntry
+b boot.c:efi_main
+b efi-stub-entry.c:efi_pe_entry
