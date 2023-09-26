@@ -23,23 +23,29 @@ Run `build.sh` which generates the following build artifacts:
 
 * EDK2 ArmVirtPkg: `QEMU_EFI.fd` and `QEMU_VARS.fd`
 * Systemd-Boot: `systemd-bootaa64.efi`
-* Linux+KVM: 
+* Linux+KVM: `Image`
 
 Above artifacts will be packaged into QEMU disks:
 
 * QEMU pflash: `QEMU_{EFI,VARS}.raw` generated from `.fd` files
-* QEMU NVMe drive: `disk.img` injected with Systemd-Boot and Linux+KVM
+* QEMU NVMe drive: `qemu_disk.img`; GPT-formatted disk containing the following partitions:
+  * _EFI System Partition_: Contains Systemd-Boot and related configuration files, and Linux+KVM image.
+  * _Root_: Linux Root filesystem
 
 ## Run
-Edit `run.sh` and uncomment '-s -S' when starting QEMU to enable GDB breaking. Also uncomment remote GDB launching.
-Run `run.sh` to start QEMU
+Run `run.sh` to start QEMU; this also starts GDB.
+
+To disable GDB, edit `run.sh` and comment '-s -S' and remote GDB launching.
 
 ## Debug
+Load symbols in GDB with the following command: `source load-syms.gdb`
+
+If the memory layout changes, regenerate `load-symbols.gdb` as follows:
+
 1. Since ASLR is disabled, save run logs: `./run.sh > runlogs.txt`
 1. Parse run logs for symbol load address: `\grep add-symbol-file runlogs.txt > load-syms.gdb`
-1. Run with GDB attach mode: `./run.sh debug`
 1. In the GDB window, load the symbols: `source load-syms.gdb`
-
+1. Fix any source paths as needed: `set substitute-path /work .`
 
 ---
 
