@@ -1,3 +1,5 @@
+add-auto-load-safe-path linux
+
 add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/ArmPlatformPkg/PrePeiCore/PrePeiCoreUniCore/DEBUG/ArmPlatformPrePeiCore.dll 0x2000
 add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/Core/Pei/PeiMain/DEBUG/PeiCore.dll 0x13240
 add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/Universal/PCD/Pei/Pcd/DEBUG/PcdPeim.dll 0x61240
@@ -103,7 +105,19 @@ add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/B
 add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe/DEBUG/UsbKbDxe.dll 0x13BDC6000
 add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe/DEBUG/UsbMassStorageDxe.dll 0x13BDB6000
 add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/Universal/FvSimpleFileSystemDxe/FvSimpleFileSystemDxe/DEBUG/FvSimpleFileSystem.dll 0x13BDA6000
+add-symbol-file linux/vmlinux 0x139220000
 
+#Above confirmed with output of "efi_debugging.py linux/arch/arm64/boot/Image":
+#EntryPoint = 0x011bfc80  TextAddress = 0x00010000 DataAddress = 0x01210000
+#.text    0x00010000 (0x1200000) flags:0x60000020
+#.data    0x01210000 (0x3E0000) flags:0xC0000040
+#Data Directories:
+#Debug 0x0122040C 0x1C
+
+# For VA kernel debugging
+add-symbol-file linux/vmlinux
+
+# Systemd-Boot symbols
 #Loading driver at 0x0013BD6A000 EntryPoint=0x0013BD7605C
 #systemd-boot@0x13bd6a000 254-546-g672de61
 #Output of "efi_debugging.py systemd-bootaa64.efi":
@@ -118,22 +132,39 @@ add-symbol-file edk2/Build/ArmVirtQemu-AARCH64/NOOPT_GCC5/AARCH64/MdeModulePkg/U
 #Relocation Table 0x00028000 0x94
 add-symbol-file systemd/build_aarch64/src/boot/efi/systemd-bootaa64.elf 0x13BD6B000 -s .data 0x13BD8F000
 
-#Loading driver at 0x00139210000 EntryPoint=0x0013A3CFC80
-#Output of "efi_debugging.py linux/arch/arm64/boot/Image":
-#EntryPoint = 0x011bfc80  TextAddress = 0x00010000 DataAddress = 0x01210000
-#.text    0x00010000 (0x1200000) flags:0x60000020
-#.data    0x01210000 (0x3E0000) flags:0xC0000040
-#Data Directories:
-#Debug 0x0122040C 0x1C
-add-symbol-file linux/vmlinux 0x139220000 -s .data 0x13A420000
+
 
 set substitute-path /work .
 
-dashboard -layout assembly source stack variables
+# Enable special aarch64 GDB handling
+set debug aarch64
 
-b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint
-b DxeHandoff.c:HandOffToDxeCore
-b DxeCoreEntryPoint.c:_ModuleEntryPoint
-b BdsEntry.c:BdsEntry
-b boot.c:efi_main
-b efi-stub-entry.c:efi_pe_entry
+# Default ouptut in hex
+set output-radix 16
+
+# GDB-Dashboard configuration
+dashboard -layout registers assembly source stack variables
+
+# Interesting breakpoints
+#b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint
+#b DxeHandoff.c:HandOffToDxeCore
+#b DxeCoreEntryPoint.c:_ModuleEntryPoint
+#b BdsEntry.c:BdsEntry
+#b boot.c:efi_main
+#b efi-stub-entry.c:efi_pe_entry
+#b efi_enter_kernel
+
+##b primary_entry -- Doesn't halt
+# Earliest breakpoint to load kernel and modules symbols
+b __primary_switched
+commands
+source linux/vmlinux-gdb.py
+lx-symbols
+b start_kernel
+end
+
+# Dump page tables
+#pipe info registers | grep -i ttbr0
+#x/512gx <ttbr0_el2>
+
+

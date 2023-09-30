@@ -42,6 +42,7 @@ Above artifacts will be packaged into QEMU disks:
 ## Run
 Execute `run.sh` to start QEMU; this also starts GDB.
 See Debug section below for GDB  instructions, or enter `c` to continue booting.
+
 To disable GDB, edit `run.sh` and comment '-s -S' and remote GDB launching.
 
 ## Debug
