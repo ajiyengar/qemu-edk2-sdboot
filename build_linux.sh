@@ -8,8 +8,14 @@ export CROSS_COMPILE=$PWD/tools/gcc-arm-10.3-2021.07-x86_64-aarch64-none-linux-g
 # Build Linux
 ###############
 make -C linux ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE LOCALVERSION="-ajay" virtconfig
+#Enable EFIStub debugging
 sed -i 's/# CONFIG_DEBUG_EFI is not set/CONFIG_DEBUG_EFI=y/g' linux/.config
-make -C linux -j$(nproc) ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE LOCALVERSION="-ajay" Image modules dtbs
+#Enable GDB scripts
+sed -i 's/# CONFIG_GDB_SCRIPTS is not set/CONFIG_GDB_SCRIPTS=y/g' linux/.config
+#Disable KASLR
+sed -i 's/CONFIG_RANDOMIZE_BASE=y/# CONFIG_RANDOMIZE_BASE is not set/g' linux/.config
+#sed -i 's/CONFIG_DEBUG_INFO_REDUCED=y/# CONFIG_DEBUG_INFO_REDUCED is not set/g' linux/.config
+make -C linux -j$(nproc) ARCH=arm64 CROSS_COMPILE=$CROSS_COMPILE LOCALVERSION="-ajay" Image modules scripts_gdb
 
 ###############
 # Build Toybox
