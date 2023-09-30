@@ -1,7 +1,8 @@
-# EDK2 ArmVirtPkg + Systemd-Boot + Linux on QEMU
+# Debug the Aarch64 boot stack using GDB on QEMU
 
-The goal of the project is to boot (and debug) QEMU with the following boot stack:
+The goal of the project is to build, boot and debug the following boot stack using GDB on QEMU:
 
+* TF-A
 - UEFI (EDK2 ArmVirtPkg)
 - Systemd-Boot
 * Linux (efistub) + KVM
@@ -13,13 +14,19 @@ The goal of the project is to boot (and debug) QEMU with the following boot stac
     git submodule update --init --recursive
     ```
 
+1. May require temporarily increasing tmpfs since disk building is done in /tmp for perf:
+
+    ```sh
+    sudo mount -o remount,size=3G /tmp
+    ```
+
 1. Install dependencies
 * `docker` used for building EDK2
-* `parted` and `mtools` used for QEMU filesystem
+* `parted`, `mtools` and `jq` used for QEMU filesystem
 * `meson`, `ninja` and `python-pyelftools` for building Systemd-Boot
 
 ## Build
-Run `build.sh` which generates the following build artifacts:
+Execute `build.sh` which generates the following build artifacts:
 
 * EDK2 ArmVirtPkg: `QEMU_EFI.fd` and `QEMU_VARS.fd`
 * Systemd-Boot: `systemd-bootaa64.efi`
@@ -29,12 +36,12 @@ Above artifacts will be packaged into QEMU disks:
 
 * QEMU pflash: `QEMU_{EFI,VARS}.raw` generated from `.fd` files
 * QEMU NVMe drive: `qemu_disk.img`; GPT-formatted disk containing the following partitions:
-  * _EFI System Partition_: Contains Systemd-Boot and related configuration files, and Linux+KVM image
-  * _Root_: Linux Root filesystem
+    * _EFI System Partition_: Contains Systemd-Boot and related configuration files, and Linux+KVM image
+    * _Root_: Linux Root filesystem
 
 ## Run
-Run `run.sh` to start QEMU; this also starts GDB.
-
+Execute `run.sh` to start QEMU; this also starts GDB.
+See Debug section below for GDB  instructions, or enter `c` to continue booting.
 To disable GDB, edit `run.sh` and comment '-s -S' and remote GDB launching.
 
 ## Debug
@@ -81,12 +88,16 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
    * `b PrePeiCoreEntryPoint.iiii:_ModuleEntryPoint` -- EDK2 PEI stage entry point
    * `b DxeHandoff.c:HandOffToDxeCore` -- Handoff between PEI and DXE stages
    * `b DxeCoreEntryPoint.c:_ModuleEntryPoint` -- EDK2 DXE stage entry point
-     * End of `DxeMain` has the jump from DXE to BDS stage
+       * End of `DxeMain` has the jump from DXE to BDS stage
    * `b BdsEntry.c:BdsEntry` -- EDK2 BDS stage entry point
    * `b boot.c:efi_main` -- Systemd-Boot entry point
-     * Inside `UefiBootManagerLib/BmBoot.c:EfiBootManagerBoot` is the jump from BDS to Systemd-Boot
+       * Inside `UefiBootManagerLib/BmBoot.c:EfiBootManagerBoot` is the jump from BDS to Systemd-Boot
    * `b efi-stub-entry.c:efi_pe_entry` -- EFISTUB entry point
-     * Inside `boot.c:image_start` is the jump from Systemd-Boot to EFISTUB
+       * Inside `boot.c:image_start` is the jump from Systemd-Boot to EFISTUB
+   * `b efi_enter_kernel` -- just before `head.S:primary_entry()`
+       * `b primary_entry` -- Here be dragons!
+       * `b start_kernel` -- kernel proper, debug with `source linux\vmlinux-gdb.py`
+           * See Kernel GDB doc for guide to `lx-$$$` tools like `lx-symbols`
 
 1. Text/Data symbol locations can be determined using `efi_debugging.py` tool available in EDK2:
 
