@@ -132,3 +132,13 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
     Using above output, setup GDB as follows:
 
    `add-symbol-file linux/vmlinux 0x139220000 -s .data 0x13A420000`
+
+1. Dumping QEMU virt machine DTB
+
+    To `-machine <...>` append `,dumpdtb=virt.dtb`
+
+    Then disassemble:
+
+    ```sh
+    dtc -o virt.dts -O dts -I dtb virt.dtb
+    ```
