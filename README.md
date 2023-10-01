@@ -14,10 +14,13 @@ The goal of the project is to build, boot and debug the following boot stack usi
     git submodule update --init --recursive
     ```
 
-1. May require temporarily increasing tmpfs since disk building is done in /tmp for perf:
+1. NOTE: For perf, many file operations are performed in /tmp --
+   requires 3G min; 4G preferred. If machine has insufficient RAM,
+   consider editing the scripts to use a different directory on the HDD.
+   tmpfs can be resized as follows:
 
     ```sh
-    sudo mount -o remount,size=3G /tmp
+    sudo mount -o remount,size=4G /tmp
     ```
 
 1. Install dependencies
@@ -135,10 +138,12 @@ If the memory layout changes, regenerate `load-symbols.gdb` as follows:
 
 1. Dumping QEMU virt machine DTB
 
-    To `-machine <...>` append `,dumpdtb=virt.dtb`
+   To `-machine <...>` append `,dumpdtb=virt.dtb`
 
-    Then disassemble:
+   Then disassemble:
 
     ```sh
     dtc -o virt.dts -O dts -I dtb virt.dtb
     ```
+
+   The DTB passed to linux can be dumped with `lx-configdump`
