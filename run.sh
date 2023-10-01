@@ -19,5 +19,4 @@ qemu-system-aarch64 \
   -s \
   -S
 
-# -nographic
-# -gdb tcp:localhost:1234 \
+# -machine dumpdtb=virt.dtb
