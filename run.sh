@@ -13,7 +13,8 @@ qemu-system-aarch64 \
   -drive file=qemu_disk.img,if=none,format=raw,id=nvm \
   -device nvme,serial=deadbeef,drive=nvm \
   -drive file=fat:rw:VirtualDrive,format=raw,media=disk \
-  -serial mon:stdio \
+  -chardev stdio,id=char0,mux=on,logfile=serial.log,signal=off \
+  -serial chardev:char0 -mon chardev=char0 \
   -net none \
   -display none \
   -s \

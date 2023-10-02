@@ -47,15 +47,14 @@ auto-firmware 1
 EOF
 mcopy -i /tmp/esp.img /tmp/loader.conf ::/loader/loader.conf
 
-PARTUUID=$(parted /tmp/qemu_disk.img -j -s unit s print | \
-  jq '.disk.partitions.[] | select(.name|test("root")) | .uuid' | \
-  tr -d '"')
+#PARTUUID=$(parted /tmp/qemu_disk.img -j -s unit s print | \
+#  jq '.disk.partitions.[] | select(.name|test("root")) | .uuid' | \
+#  tr -d '"')
 cat > /tmp/linux.conf <<EOF &&
 title   Linux
 linux   /Image
-options root=PARTUUID=$PARTUUID rw
+options root="PARTLABEL=root" rw
 EOF
-#options root="PARTLABEL=root" rw
 mcopy -i /tmp/esp.img /tmp/linux.conf ::/loader/entries/linux.conf
 
 #Inject ESP into disk

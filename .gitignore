@@ -1,11 +1,10 @@
-/build*/
 *.raw
 *.img
 *.bak
+*.log
 .gdb_history
 gdb.txt
 VirtualDrive
-*logs.txt
+tools
 cscope*
 tags
-tools
