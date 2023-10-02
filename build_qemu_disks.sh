@@ -53,7 +53,7 @@ mcopy -i /tmp/esp.img /tmp/loader.conf ::/loader/loader.conf
 cat > /tmp/linux.conf <<EOF &&
 title   Linux
 linux   /Image
-options root="PARTLABEL=root" rw
+options root="PARTLABEL=root" console=ttyAMA0 rw
 EOF
 mcopy -i /tmp/esp.img /tmp/linux.conf ::/loader/entries/linux.conf
 
