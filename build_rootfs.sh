@@ -40,9 +40,8 @@ ifconfig lo 127.0.0.1
 
 echo 3 > /proc/sys/kernel/printk     #cat /dev/kmsg
 
-CONSOLE=/dev/ttyAMA0                 #Serial
 echo -e '\e[?7hType exit when done.' #Vertical autowrap
-exec oneit -c $CONSOLE /bin/sh
+exec oneit /bin/sh
 EOF
 chmod +x /tmp/rootfs/sbin/init &&
 
@@ -90,8 +89,6 @@ ${CROSS_COMPILE}readelf -a mksh/mksh | grep -E "(program interpreter)|(Shared li
 # change ownership
 #################
 sudo chown -R root:root /tmp/rootfs
-sudo mknod -m 666 /tmp/rootfs/dev/null c 1 3
-sudo mknod -m 600 /tmp/rootfs/dev/console c 5 1
 
 ##################
 # Create InitRamFs
